@@ -37,6 +37,7 @@ public:
   {
     return m_Instance;
   }
+  void PrintExtensions();
 
 private:
   VkInstance m_Instance;
@@ -48,7 +49,7 @@ private:
 struct Sandbox
 {
   VkAPI m_Instance;
-  bool m_IsRunning = false;
+  GLFWwindow *m_Window;
 
   Sandbox() = default;
 
@@ -87,7 +88,23 @@ void VkAPI::createVKInstace()
   createInfo.enabledLayerCount = 0;
 
   VkResult result = vkCreateInstance(&createInfo, nullptr, &m_Instance);
-  Assert((result != VK_SUCCESS), "failed to create Vk instance");
+  Assert(result != VK_SUCCESS, "failed to create Vk instance");
+}
+
+void VkAPI::PrintExtensions()
+{
+  uint32_t extensionCount = 0;
+  VkResult extResult = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+  Assert(extResult != VK_SUCCESS, "failed to get extentions");
+
+  std::vector<VkExtensionProperties> extensions(extensionCount);
+  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+  printf("Available extensions: %d\n", extensionCount);
+  for (const auto &extension : extensions)
+  {
+    printf("\t%s\n", extension.extensionName);
+  }
 }
 
 void Sandbox::InitVulkan()
@@ -101,19 +118,40 @@ void Sandbox::InitVulkan()
   m_Instance = VkAPI();
 }
 
-void Sandbox::CreateWindow() {}
-void Sandbox::EventLoop() {}
-void Sandbox::CleanUp() {}
+void Sandbox::CreateWindow()
+{
+  int status = glfwInit();
+  Assert(status != GLFW_TRUE, "failed to init glfw");
+
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  m_Window = glfwCreateWindow(1080, 720, "Hello, World", nullptr, nullptr);
+}
+
+void Sandbox::EventLoop()
+{
+  while (!glfwWindowShouldClose(m_Window))
+  {
+    glfwPollEvents();
+  }
+}
+
+void Sandbox::CleanUp()
+{
+  auto vkInstance = m_Instance.GetInstance();
+  vkDestroyInstance(vkInstance, nullptr);
+  glfwDestroyWindow(m_Window);
+  glfwTerminate();
+}
 
 int main()
 {
 
   Sandbox app = Sandbox();
   app.InitVulkan();
+  app.m_Instance.PrintExtensions();
   app.CreateWindow();
   app.EventLoop();
   app.CleanUp();
-
   return 0;
 }
 

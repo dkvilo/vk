@@ -67,7 +67,7 @@ void VkAPI::createVKInstace()
 {
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  appInfo.pApplicationName = "Hello Vulkan, nice too meet you!";
+  appInfo.pApplicationName = "Hello Vulkan, nice to meet you!";
   appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
   appInfo.pEngineName = "VKExample";
   appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
